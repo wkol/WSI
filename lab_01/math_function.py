@@ -9,6 +9,7 @@ class MathFunction:
 
     def __call__(self, x) -> float:
         return self.fun(x, *self.args)
-        
+
+
 def fun(x: np.ndarray, a: float, n: int):
     return sum([a ** (i / (n - 1)) * xi * xi for i, xi in enumerate(x)])
