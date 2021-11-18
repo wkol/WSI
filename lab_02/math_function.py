@@ -11,8 +11,9 @@ class MathFunction:
         return self.fun(x, *self.args)
 
 
-def fun(x: np.ndarray, a: float, n: int):
+def fun_sphere(x: np.ndarray, a: float=1, n: int=10):
     return sum([a ** (i / (n - 1)) * xi * xi for i, xi in enumerate(x)])
+
 
 def fun_evolution(x, d):
         x_norm = np.linalg.norm(x)

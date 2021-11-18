@@ -5,6 +5,7 @@ from math_function import MathFunction
 
 MAX_ITERS = 1000
 
+
 class FunctionOptimization:
     @staticmethod
     def gradient_descent(fun: MathFunction, starting_point: np.ndarray, step_size: float = 0.001, values: List[float] = None, precision: float = 1e-03) -> Tuple[np.ndarray, int]:

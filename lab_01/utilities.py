@@ -29,6 +29,7 @@ def create_plot(path: str, data: Tuple[List[List[float]], List[int]], title: str
     plt.xlabel(label_x)
     plt.ylabel(label_y)
     plt.title(title)
+    plt.yscale("log")
     for i, element in enumerate(data[1]):
         plt.plot(np.arange(element), np.array(data[0][i]), label=str(STEP_SIZES[i]))
     if (not len(data[1]) == 1):

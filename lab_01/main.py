@@ -16,16 +16,16 @@ def main():
                         "Wartości funkcji w poszczególnych iteracjach dla metody gradientu",
                         "Iteracja", "Wartość funkcji"
                         )
-            # create_plot(os.getcwd() + f"/lab_01/chart/newton_const/fig{i}.png",
-            #             test_step_size(FunctionOptimization.newton_constant_step, a, dim),
-            #             "Wartości funkcji w poszczególnych iteracjach dla metody Newtona",
-            #             "Iteracja", "Wartość funkcji"
-            #             )
-            # create_plot(os.getcwd() + f"/lab_01/chart/newton_backtracking/fig{i}.png",
-            #             test_step_size(FunctionOptimization.newton_backtracking_step, a, dim),
-            #             "Wartości funkcji w poszczególnych iteracjach dla metody Newtona(z nawrotami)",
-            #             "Iteracja", "Wartość funkcji"
-            #             )
+            create_plot(os.getcwd() + f"/lab_01/chart/newton_const/fig{i}.png",
+                        test_step_size(FunctionOptimization.newton_constant_step, a, dim),
+                        "Wartości funkcji w poszczególnych iteracjach dla metody Newtona",
+                        "Iteracja", "Wartość funkcji"
+                        )
+            create_plot(os.getcwd() + f"/lab_01/chart/newton_backtracking/fig{i}.png",
+                        test_step_size(FunctionOptimization.newton_backtracking_step, a, dim),
+                        "Wartości funkcji w poszczególnych iteracjach dla metody Newtona(z nawrotami)",
+                        "Iteracja", "Wartość funkcji"
+                        )
             i += 1
     time_gradient = 0
     time_newton = 0
