@@ -23,6 +23,7 @@ class ComputerPlayer(Player):
         self.max_depth = depth
 
     def make_move(self, board: Board) -> Move:
+        # If Board is empty make a random move
         if board.is_empty():
             return Move(random.randint(0, board.size - 1),
                         random.randint(0, board.size - 1))
@@ -30,18 +31,20 @@ class ComputerPlayer(Player):
 
     def minimax(self, board: Board, cell_type: Cell, depth: int) -> Move:
         """
-        Minimax method for tic tac toe which searches for the best move in current board
+        Minimax method for tic tac toe which searches
+        for the best move for a current player
         """
         score = -inf if cell_type == self.cell_type else inf  # Select init score based on the player's sign
         best_move = Move(-1, -1, score)
         if depth == self.max_depth or board.end():
-            # Evaluate score of the move based on current board state and number of moves performed
-            if self.cell_type  == cell_type:
-                return Move(-1, -1, self.evaluate(board, cell_type) - depth)  # 
-            return Move(-1, -1, self.evaluate(board, cell_type) + depth)    
+            # Evaluate score of the move based on current board state and
+            # number of moves performed (depth)
+            if self.cell_type == cell_type:
+                return Move(-1, -1, self.evaluate(board, cell_type) - depth)
+            return Move(-1, -1, self.evaluate(board, cell_type) + depth)
         for legal_move in board.get_legal_moves():
             board.current_board[legal_move.y_cord][legal_move.x_cord] = cell_type
-            move = self.minimax(board, Cell(-cell_type.value), depth + 1)
+            move = self.minimax(board, Cell(-cell_type.value), depth + 1)  # Recursive call to the minimax function which computes further states
             board.current_board[legal_move.y_cord][legal_move.x_cord] = Cell.EMPTY_CELL # Undo move to avoid deepCopying of the Board object
             move.y_cord, move.x_cord = legal_move.y_cord, legal_move.x_cord
             if cell_type == self.cell_type:

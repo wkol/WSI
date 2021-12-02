@@ -6,10 +6,11 @@ import random
 import time
 
 class Game:
-    def __init__(self, players: List[Player], size) -> None:
+    def __init__(self, players: List[Player], size: int, debug: bool) -> None:
         self.players = players
         self.dim = size
         self.board = Board(size)
+        self._debug = debug
 
     def clean_board(self) -> None:
         """
@@ -36,7 +37,8 @@ class Game:
             print(f"Player with {cells_sign[current_player.cell_type]} sign turn:")
             self.board.make_move(current_player.make_move(self.board), current_player.cell_type)
             current_player = self.swap_player(current_player)
-            clear_screen()
+            if not self._debug:
+                clear_screen()
         print(self.board)
         if self.board.wins() is None:
             print("Game ended as a draw")

@@ -7,6 +7,9 @@ import sys
 
 
 def get_players(depth: int) -> List[Player]:
+    """
+    Function to get types of players foe the tic tac toe game
+    """
     player_1 = input("Select type of the first player (X): (Human, Computer) ")
     while player_1 not in ["Human", "Computer"]:
         player_1 = input("Invalid input Select again: (Human, Computer) ")
@@ -25,6 +28,9 @@ def get_players(depth: int) -> List[Player]:
 
 
 def get_board_sizes() -> int:
+    """
+    Function to get size of the square tic tac toe board
+    """
     size = input("Select size of the board (>2): ")
     while not size.isdigit() and int(size) < 3:
         size = input("Invalid input. Select a positive, greater than 2 number: ")
@@ -32,14 +38,20 @@ def get_board_sizes() -> int:
 
 
 def main(args: List[str]) -> None:
+    """
+    Main function which asks player for game's properties and plays the created game
+    """
     parser = argparse.ArgumentParser("Tic tac toe game with minimax algorithm")
     parser.add_argument('--depth', default=8, type=int)
-    depth = parser.parse_args().depth
+    parser.add_argument('--debug', action="store_true")
+    args = parser.parse_args()
+    depth = args.depth
+    debug = bool(args.debug)
     print("Tic tac toe game")
     size = get_board_sizes()
     players = get_players(depth)
     clear_screen()
-    game = Game(players, size)
+    game = Game(players, size, debug)
     end = False
     while not end:
         game.play()

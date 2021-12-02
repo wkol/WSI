@@ -51,6 +51,9 @@ class Board:
         return legal_moves
 
     def is_legal_move(self, x: int, y: int) -> bool:
+        """
+        Method checking if the move at given coordinates is legal
+        """
         if x not in range(0, self.size) or y not in range(0, self.size):
             return False
         if not self.current_board[y][x] == Cell.EMPTY_CELL:
@@ -79,6 +82,10 @@ class Board:
         return np.all(self.current_board == Cell.EMPTY_CELL)
 
     def end(self) -> bool:
+        """
+        Method which returns True or False wheather game has
+        ended (one of the player won or draw) or not
+        """
         if self.wins() is not None:
             return True
         if self.get_legal_moves() == []:
