@@ -13,7 +13,7 @@ class Board:
         assert x_size == y_size
         self.current_board = np.full((y_size, x_size), Cell.EMPTY_CELL)
         self.heuristic_board = self.generate_heurestic_board(x_size, y_size)
-    
+
 
     @staticmethod
     def generate_heurestic_board(x_size, y_size) -> List[List[int]]:
@@ -35,7 +35,6 @@ class Board:
         return board_str
 
 
-
     def make_move(self, move: Move, cell: Cell) -> None:
         self.current_board[move.y_cord][move.x_cord] = cell
 
@@ -48,7 +47,7 @@ class Board:
         return legal_moves
     
     def is_legal_move(self, x, y) -> bool:
-        if x not in [0, 1, 2] or y not in [0, 1, 2]:
+        if x not in range(0, self._x_size) or y not in range(0, self._y_size):
             return False
         if not self.current_board[y][x] == Cell.EMPTY_CELL:
             return False
@@ -62,7 +61,7 @@ class Board:
             if np.all(row[0] == row) and row[0] != Cell.EMPTY_CELL:
                 return row[0]
         if self._x_size == self._y_size:
-            if np.all(self.current_board.diagonal() == self.current_board[0][0]) and self.current_board[0][0] != Cell.EMPTY_CELL :
+            if np.all(self.current_board.diagonal() == self.current_board[0][0]) and self.current_board[0][0] != Cell.EMPTY_CELL:
                 return self.current_board[0][0]
             if np.all(np.fliplr(self.current_board).diagonal() == self.current_board[0][self._x_size-1]) and self.current_board[0][self._x_size-1] != Cell.EMPTY_CELL:
                 return self.current_board[0][self._x_size-1]
@@ -70,9 +69,6 @@ class Board:
 
     def is_empty(self):
         return np.all(self.current_board == Cell.EMPTY_CELL)
-
-    def heuristic_grade():
-        values_table = np.array([[3, 2, 3], [2, 4, 2], [3, 2, 3,]])
 
     def end(self) -> bool:
         if self.wins() is not None:

@@ -10,7 +10,7 @@ class Player(ABC):
     def __init__(self, cell_type: Cell) -> None:
         assert Cell(cell_type) in [Cell.O_CELL, Cell.X_CELL]
         self.cell_type = Cell(cell_type)
-
+         
     @abstractclassmethod
     def make_move(self, board: Board) -> Move:
         pass
@@ -31,7 +31,9 @@ class ComputerPlayer(Player):
         score = -inf if cell_type == self.cell_type else inf  # Select init score based on the player's sign  
         best_move = Move(-1, -1, score)
         if depth == self.max_depth or board.end():
-            return Move(-1, -1, self.evaluate(board, cell_type))
+            if self.cell_type  == cell_type:
+                return Move(-1, -1, self.evaluate(board, cell_type) - depth)
+            return Move(-1, -1, self.evaluate(board, cell_type) + depth)
         for legal_move in board.get_legal_moves():
             board.current_board[legal_move.y_cord][legal_move.x_cord] = cell_type
             move = self.minimax(board, Cell(-cell_type.value), depth + 1)
@@ -45,27 +47,27 @@ class ComputerPlayer(Player):
 
     def evaluate(self, board: Board, cell_type: Cell) -> int:
         if board.wins() == self.cell_type:
-            return 1
+            return 10000
         if board.wins() == Cell(-self.cell_type.value):
-            return -1
+            return -10000
         else:
-            return 0#self.evalute_heura(board, cell_type)
+            return self.evalute_heura(board, cell_type)
 
-    # def evalute_heura(self, board: Board, cell_type: Cell):
-    #     result = 0
-    #     for i in range(len(board.current_board)):
-    #         for j in range(len(board.current_board[i])):
-    #             if self.cell_type == cell_type:
-    #                 if cell_type == board.current_board[i][j]:
-    #                     result += board.heuristic_board[i][j]
-    #                 elif board.current_board[i][j] != Cell.EMPTY_CELL:
-    #                     result -= board.heuristic_board[i][j]
-    #             else:
-    #                 if cell_type == board.current_board[i][j]:
-    #                     result -= board.heuristic_board[i][j]
-    #                 elif board.current_board[i][j] != Cell.EMPTY_CELL:
-    #                     result += board.heuristic_board[i][j]
-    #     return result
+    def evalute_heura(self, board: Board, cell_type: Cell) -> int:
+        result = 0
+        for i in range(len(board.current_board)):
+            for j in range(len(board.current_board[i])):
+                if self.cell_type == cell_type:
+                    if cell_type == board.current_board[i][j]:
+                        result += board.heuristic_board[i][j]
+                    elif board.current_board[i][j] != Cell.EMPTY_CELL:
+                        result -= board.heuristic_board[i][j]
+                else:
+                    if cell_type == board.current_board[i][j]:
+                        result -= board.heuristic_board[i][j]
+                    elif board.current_board[i][j] != Cell.EMPTY_CELL:
+                        result += board.heuristic_board[i][j]
+        return result
 
 
 class HumanPlayer(Player):
