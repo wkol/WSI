@@ -63,7 +63,7 @@ class Board:
     def wins(self) -> Optional[Cell]:
         """
         Method checking if game is won by any of the players.
-        Return None in case when game is neither end nor won 
+        Return None in case when game is neither end nor won
         """
         for row in self.current_board:
             if np.all(row[0] == row) and row[0] != Cell.EMPTY_CELL:

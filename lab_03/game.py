@@ -5,6 +5,7 @@ from constants import cells_sign, clear_screen
 import random
 import time
 
+
 class Game:
     def __init__(self, players: List[Player], size: int, debug: bool) -> None:
         self.players = players
