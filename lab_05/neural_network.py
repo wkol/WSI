@@ -13,10 +13,10 @@ class NeuralNetwork:
         self.initialize_weights(input, actual)
         errors = []
         for _ in range(epoch_num):
-        #     hidden_layer_sum = (input @ self.inner_weights) + self.inner_bias
+        #     hidden_layer_sum = (input @ self.inner_weights) + self.w0
         #     hidden_output = self.activation_function(hidden_layer_sum)
 
-        #     output_layer_sum = (hidden_output @ self.outer_weights) + self.outer_bias
+        #     output_layer_sum = (hidden_output @ self.outer_weights) + self.v0
         #     predicted_y = self.activation_function(output_layer_sum)
             
         #     loss = self.loss_function(predicted_y, actual)
@@ -25,22 +25,21 @@ class NeuralNetwork:
         #     delta2 = (predicted_y - actual) * predicted_y * (1 - predicted_y)
         #     outer_weights_gradient = (hidden_output.T @ delta2)
         #     self.outer_weights = self.outer_weights - outer_weights_gradient * self.learning_rate
-        #     self.outer_bias = self.outer_bias - np.sum(delta2, axis=0, keepdims=True) * self.learning_rate
+        #     self.v0 = self.v0 - np.sum(delta2, axis=0, keepdims=True) * self.learning_rate
 
         #     delta1 = (delta2 @ self.outer_weights.T) * hidden_output * (1 - hidden_output)
         #     inner_weights_gradient = input.T @ delta1
         #     self.inner_weights = self.inner_weights - inner_weights_gradient * self.learning_rate
-        #     self.inner_bias = self.inner_bias - np.sum(delta1, axis=0, keepdims=True) * self.learning_rate
+        #     self.w0 = self.w0 - np.sum(delta1, axis=0, keepdims=True) * self.learning_rate
         # return errors    
             # Forward pass
             # Hidden layer
-            hidden_sum = np.dot(input, self.inner_weights) + self.inner_bias
+            hidden_sum = np.dot(input, self.inner_weights) + self.w0
             hidden_activation = self.activation_function(hidden_sum)
 
             # Output layer
             output_layer_input = hidden_activation.dot(self.outer_weights) + self.v0
             y_pred = self.activation_function(output_layer_input)
-            loss = self.empiric_loss(y_pred, actual)
             # print(f"Loss: {loss}")
             # Backpropagation
             # Output layer
@@ -60,24 +59,37 @@ class NeuralNetwork:
             self.w0 -= self.learning_rate * gradient_hidden_bias
 
     def predict(self, input: np.ndarray):
-        hidden_input = (input @ self.inner_weights) + self.inner_bias
+        hidden_input = (input @ self.inner_weights) + self.w0
         hidden_output = self.activation_function(hidden_input)
-        output_layer_input = (hidden_output @ self.outer_weights) + self.outer_bias
+        output_layer_input = (hidden_output @ self.outer_weights) + self.v0
         return self.activation_function(output_layer_input)
 
     def loss_function(self, predicted: np.ndarray, actual: np.ndarray) -> np.ndarray:
         return np.square(actual-predicted) / 2.0
 
+    def loss_derivative(self, predicted: np.ndarray, actual: np.ndarray) -> np.ndarray:
+        return predicted - actual
+
     def activation_function(self, x: np.ndarray) -> np.ndarray:
         return 1.0 / (1.0 + np.exp(-x))
+    
+    def activation_derivative(self, x):
+        return self.activation_function(x) * (1 - self.activation_function(x))
 
     def initialize_weights(self, x: np.ndarray, y: np.ndarray):
-        # Weights input layer - hidden layer
-        self.inner_weights = self.rng.uniform(size=(1, self.neurons))
-        self.inner_bias = np.zeros(shape=(1, self.neurons))
-        # Weights hidden layer - output layer
-        self.outer_weights = self.rng.uniform(size=(self.neurons, 1))
-        self.outer_bias = np.zeros(shape=(1, 1))
+        limit = 1
+        self.inner_weights = np.random.uniform(-limit, limit, (1, self.neurons))
+        self.w0 = np.zeros((1, self.neurons))
+        # Output layer
+        limit = self.neurons ** -0.5
+        self.outer_weights = np.random.uniform(-limit, limit, (self.neurons, 1))
+        self.v0 = np.zeros((1, 1))
+        # # Weights input layer - hidden layer
+        # self.inner_weights = self.rng.standard_normal(size=(1, self.neurons))
+        # self.w0 = np.zeros(shape=(1, self.neurons))
+        # # Weights hidden layer - output layer
+        # self.outer_weights = self.rng.standard_normal(size=(self.neurons, 1))
+        # self.v0 = np.zeros(shape=(1, 1))
     
 """
 Pick a random weights.
