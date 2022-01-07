@@ -53,10 +53,10 @@ class NeuralNetwork:
             gradient_hidden_bias = np.sum(gradient_hidden_layer, axis=0, keepdims=True)
 
             # Update weights
-            self.outer_weights -= self.learning_rate * gradient_output_weights
-            self.v0 -= self.learning_rate * gradient_output_bias
-            self.inner_weights -= self.learning_rate * gradient_hidden_weights
-            self.w0 -= self.learning_rate * gradient_hidden_bias
+            self.outer_weights = self.outer_weights - self.learning_rate * gradient_output_weights
+            self.v0 = self.v0 - self.learning_rate * gradient_output_bias
+            self.inner_weights = self.inner_weights - self.learning_rate * gradient_hidden_weights
+            self.w0 = self.w0 - self.learning_rate * gradient_hidden_bias
     def predict(self, input: np.ndarray):
         hidden_input = input.dot(self.inner_weights) + self.w0
         hidden_output = self.activation_function(hidden_input)
@@ -71,10 +71,10 @@ class NeuralNetwork:
         return predicted - actual
 
     def activation_function(self, x: np.ndarray) -> np.ndarray:
-        return np.where(x >= 0, x, 0)
+        return 1.0 / (1.0 + np.exp(-x))
 
     def activation_derivative(self, x):
-        return np.where(x >= 0, 1, 0)
+        return self.activation_function(x) * (1 - self.activation_function(x))
 
     def initialize_weights(self, x: np.ndarray, y: np.ndarray):
         # limit = 1
