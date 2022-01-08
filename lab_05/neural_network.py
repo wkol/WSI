@@ -1,68 +1,85 @@
+from typing import Callable, List, Tuple
+from matplotlib import pyplot as plt
 import numpy as np
+from numpy.core.numeric import indices
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
 
+def activation_function( x: np.ndarray) -> np.ndarray:
+    return 1 / (1.0 + np.exp(-x))
+
+def activation_derivative(x: np.ndarray):
+    return activation_function(x) * (1 - activation_function(x))
+
+class Layer:
+    def __init__(self, rng: np.random.Generator, weight_shape: Tuple[int]) -> None:
+        self.rng = rng
+        self.output = None
+        self.activation_input = None
+        self.initialize_weights(weight_shape)
+
+    def feedforward(self, input: np.ndarray,  activation_fun: Callable):
+        self.activation_input = np.dot(self.weights, input) + self.bias
+        self.output = activation_fun(self.activation_input)
+        return self.activation_input, self.output
+
+    def update_weights(self, weight_gradient: np.ndarray, bias_gradient: np.ndarray, learning_rate: float):
+        self.weights = self.weights - weight_gradient * learning_rate
+        self.bias = self.bias - bias_gradient * learning_rate
+
+    def initialize_weights(self, weight_shape):
+        self.weights = rng.standard_normal(weight_shape)
+        self.bias = rng.standard_normal((weight_shape[0], 1))
+
+    def backpropagate(self, deltas: np.ndarray, input: np.ndarray):
+        sp = activation_derivative(input)
+        delta = np.dot(self.weights.T, deltas[-1])
+        delta = delta * sp
+        return delta
 
 class NeuralNetwork:
-    def __init__(self, rng: np.random.Generator, neurons: int,
-                 learning_rate: float = 5, bias: float = 0) -> None:
+    def __init__(self, rng: np.random.Generator, layers: List[int],
+                 learning_rate: float = 0.1, epochs: int = 10000) -> None:
         self.rng = rng
-        self.neurons = neurons
         self.learning_rate = learning_rate
-        self.bias = bias
+        self.epochs = epochs
+        self.initialize_layers(layers)
 
-    def train(self, input: np.ndarray, actual: np.ndarray, epoch_num: int):
-        self.initialize_weights(input, actual)
-        errors = []
+    def train(self, input: np.ndarray, actual: np.ndarray, epoch_num: int, batches: int):
+        n = input.shape[1]
         for _ in range(epoch_num):
-            # hidden_layer_sum = np.dot(input, self.inner_weights) + self.w0
-            # hidden_output = self.activation_function(hidden_layer_sum)
+            for batch_i in range(0, n, batches):
+                input_batch = input[0][batch_i:batch_i+batches].reshape(1, batches)
+                actual_batch = actual[0][batch_i:batch_i+batches].reshape(1, batches)
+                inputs, outputs = self.feed_forward(input_batch)
+                dw, db = self.backpropagate(inputs, outputs, actual_batch)
+                [layer.update_weights(dw[i], db[i], self.learning_rate) for i, layer in enumerate(self.layers)]
+                print("loss = {}".format(np.linalg.norm(self.layers[-1].output-actual_batch)))
 
-            # output_layer_sum = np.dot(hidden_output,self.outer_weights) + self.v0
-            # predicted_y = self.activation_function(output_layer_sum)
-            
-            # loss = self.loss_function(predicted_y, actual)
-            # errors.append(loss)
+    def feed_forward(self, train_data: np.ndarray):
+        inputs = []
+        outputs = [train_data]
+        for layer in self.layers:
+            inp, out = layer.feedforward(outputs[-1], activation_function)
+            inputs.append(inp)
+            outputs.append(out)
+        return inputs, outputs
 
-            # delta2 = (predicted_y - actual) * predicted_y * (1 - predicted_y)
-            # outer_weights_gradient = np.dot(hidden_output.T, delta2)
-            # self.outer_weights = self.outer_weights - outer_weights_gradient * self.learning_rate
-            # self.v0 = self.v0 - np.sum(delta2, axis=0, keepdims=True) * self.learning_rate
+    def backpropagate(self,inputs, outputs, actual: np.ndarray): # Backpropagation for all hideen layers
+        loss_derivative = self.loss_derivative(outputs[-1], actual)
+        deltas = [loss_derivative * activation_derivative(inputs[-1])]
+        for i in reversed(range(len(self.layers) - 1)):
+            dl = self.layers[i+1].backpropagate(deltas, inputs[i])
+            deltas.append(dl)
+        deltas = deltas[::-1]
+        batch_size = actual.shape[1]
+        db = [d.dot(np.ones((batch_size,1)))/float(batch_size) for d in deltas]
+        dw = [d.dot(outputs[i].T)/float(batch_size) for i,d in enumerate(deltas)]
+        return dw, db
 
-            # delta1 = np.dot(delta2, self.outer_weights.T) * hidden_output * (1 - hidden_output)
-            # inner_weights_gradient = np.dot(input.T, delta1)
-            # self.inner_weights = self.inner_weights - inner_weights_gradient * self.learning_rate
-            # self.w0 = self.w0 - np.sum(delta1, axis=0, keepdims=True) * self.learning_rate
-        # return errors    
-            # # Forward pass
-            # Hidden layer
-            hidden_sum = np.dot(input, self.inner_weights) + self.w0
-            hidden_activation = self.activation_function(hidden_sum)
 
-            # Output layer
-            output_layer_input = hidden_activation.dot(self.outer_weights) + self.v0
-            y_pred = self.activation_function(output_layer_input)
-            # print(f"Loss: {loss}")
-            # Backpropagation
-            # Output layer
-            gradient_output_layer = self.loss_derivative(y_pred, actual) * self.activation_derivative(output_layer_input)
-            gradient_output_weights = hidden_activation.T.dot(gradient_output_layer)
-            gradient_output_bias = np.sum(gradient_output_layer, axis=0, keepdims=True)
-
-            # Hidden layer
-            gradient_hidden_layer = gradient_output_layer.dot(self.outer_weights.T) * self.activation_derivative(hidden_sum)
-            gradient_hidden_weights = input.T.dot(gradient_hidden_layer)
-            gradient_hidden_bias = np.sum(gradient_hidden_layer, axis=0, keepdims=True)
-
-            # Update weights
-            self.outer_weights = self.outer_weights - self.learning_rate * gradient_output_weights
-            self.v0 = self.v0 - self.learning_rate * gradient_output_bias
-            self.inner_weights = self.inner_weights - self.learning_rate * gradient_hidden_weights
-            self.w0 = self.w0 - self.learning_rate * gradient_hidden_bias
     def predict(self, input: np.ndarray):
-        hidden_input = input.dot(self.inner_weights) + self.w0
-        hidden_output = self.activation_function(hidden_input)
-        output_layer_input = np.dot(hidden_output, self.outer_weights) + self.v0
-        y_pred = self.activation_function(output_layer_input)
-        return y_pred
+        return self.feed_forward(input)[1][-1]
 
     def loss_function(self, predicted: np.ndarray, actual: np.ndarray) -> np.ndarray:
         return np.square(actual-predicted) / 2.0
@@ -70,30 +87,17 @@ class NeuralNetwork:
     def loss_derivative(self, predicted: np.ndarray, actual: np.ndarray) -> np.ndarray:
         return predicted - actual
 
-    def activation_function(self, x: np.ndarray) -> np.ndarray:
-        return 1.0 / (1.0 + np.exp(-x))
+    def initialize_layers(self, layers: List[int]) -> None:
+        self.layers = [Layer(self.rng, (layers[i+1], layers[i])) for i in range(len(layers) - 1)]
 
-    def activation_derivative(self, x):
-        return self.activation_function(x) * (1 - self.activation_function(x))
+rng = np.random.default_rng(1)
+X = 2*np.pi*rng.standard_normal(1000).reshape(1, -1)
+y = np.sin(X)
+nn = NeuralNetwork(rng, [1, 16, 1], 0.1)
 
-    def initialize_weights(self, x: np.ndarray, y: np.ndarray):
-        # limit = 1
-        # self.inner_weights = np.random.uniform(-limit, limit, (1, self.neurons))
-        # self.w0 = np.zeros((1, self.neurons))
-        # # Output layer
-        # limit = self.neurons ** -0.5
-        # self.outer_weights = np.random.uniform(-limit, limit, (self.neurons, 1))
-        # self.v0 = np.zeros((1, 1))
-        #Weights input layer - hidden layer
-        self.inner_weights = self.rng.standard_normal(size=(1, self.neurons))
-        self.w0 = np.zeros(shape=(1, self.neurons))
-        # Weights hidden layer - output layer
-        self.outer_weights = self.rng.standard_normal(size=(self.neurons, 1))
-        self.v0 = np.zeros(shape=(1, 1))
-    
-"""
-Pick a random weights.
-Optimize
-
-"""
-
+nn.train(X, y, 10000, batches=50)
+a_s = nn.predict(X)
+plt.scatter(X.flatten(), y.flatten())
+plt.scatter(X.flatten(), a_s.flatten())
+plt.savefig("hah.png")
+#print(y, X)
