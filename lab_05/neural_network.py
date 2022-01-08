@@ -28,8 +28,8 @@ class Layer:
         self.bias = self.bias - bias_gradient * learning_rate
 
     def initialize_weights(self, weight_shape):
-        self.weights = rng.standard_normal(weight_shape)
-        self.bias = rng.standard_normal((weight_shape[0], 1))
+        self.weights = self.rng.standard_normal(weight_shape)
+        self.bias = self.rng.standard_normal((weight_shape[0], 1))
 
     def backpropagate(self, deltas: np.ndarray, input: np.ndarray):
         sp = activation_derivative(input)
@@ -49,12 +49,11 @@ class NeuralNetwork:
         n = input.shape[1]
         for _ in range(epoch_num):
             for batch_i in range(0, n, batches):
-                input_batch = input[0][batch_i:batch_i+batches].reshape(1, batches)
-                actual_batch = actual[0][batch_i:batch_i+batches].reshape(1, batches)
+                input_batch = input[0][batch_i:batch_i+batches].reshape(1, -1)
+                actual_batch = actual[0][batch_i:batch_i+batches].reshape(1, -1)
                 inputs, outputs = self.feed_forward(input_batch)
                 dw, db = self.backpropagate(inputs, outputs, actual_batch)
                 [layer.update_weights(dw[i], db[i], self.learning_rate) for i, layer in enumerate(self.layers)]
-                print("loss = {}".format(np.linalg.norm(self.layers[-1].output-actual_batch)))
 
     def feed_forward(self, train_data: np.ndarray):
         inputs = []
@@ -89,15 +88,3 @@ class NeuralNetwork:
 
     def initialize_layers(self, layers: List[int]) -> None:
         self.layers = [Layer(self.rng, (layers[i+1], layers[i])) for i in range(len(layers) - 1)]
-
-rng = np.random.default_rng(1)
-X = 2*np.pi*rng.standard_normal(1000).reshape(1, -1)
-y = np.sin(X)
-nn = NeuralNetwork(rng, [1, 16, 1], 0.1)
-
-nn.train(X, y, 10000, batches=50)
-a_s = nn.predict(X)
-plt.scatter(X.flatten(), y.flatten())
-plt.scatter(X.flatten(), a_s.flatten())
-plt.savefig("hah.png")
-#print(y, X)
