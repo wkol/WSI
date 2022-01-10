@@ -71,7 +71,7 @@ class NeuralNetwork:
         output for each layer
         """
         inputs = []
-        outputs = [train_data]  # Ouput from input layer
+        outputs = [train_data]  # Output from input layer
         for layer in self.layers:
             inp, out = layer.feed_forward(
                 outputs[-1], self.activation_function)

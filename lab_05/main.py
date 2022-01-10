@@ -5,16 +5,17 @@ import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
-SAMPLES = 4000
+
+SAMPLES = 16000
 
 
 def main():
     m = MathFunction(neural_function)
-    neurons = [12, 20, 30, 35, 50, 80]
-    lrs = [0.01, 0.1, 0.001]
+    neurons = [20, 40, 60, 80, 100, 120]
+    lrs = [0.5, 0.1, 0.01]
     x_scaler = MinMaxScaler()
     y_scaler = MinMaxScaler()
-    x_raw = np.linspace(-10, 10, SAMPLES)
+    x_raw = np.linspace(-40, 40, SAMPLES)
     y_raw = m(x_raw)
     train_x = x_scaler.fit_transform(x_raw.reshape(-1, 1))
     train_y = y_scaler.fit_transform(y_raw.reshape(-1, 1))
@@ -26,8 +27,8 @@ def main():
         for neuron in neurons:
             rng = np.random.default_rng(1)
             n = NeuralNetwork(rng, 2, neuron, FunctionCollection.sigmoid,
-                              FunctionCollection.loss_MSE, 0.1)
-            n.train(X_train.reshape(1, -1), y_train.reshape(1, -1), 1000, 200)
+                              FunctionCollection.loss_MSE, lr)
+            n.train(X_train.reshape(1, -1), y_train.reshape(1, -1), 100000, 200)
             a = n.predict(X_test.reshape(1, -1))
             a = y_scaler.inverse_transform(a.reshape(-1, 1))
             x_temp = x_scaler.inverse_transform(X_test)
